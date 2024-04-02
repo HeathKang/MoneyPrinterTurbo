@@ -6,6 +6,7 @@ from loguru import logger
 from moviepy.editor import *
 from moviepy.video.fx.crop import crop
 from moviepy.video.tools.subtitles import SubtitlesClip
+from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
 
 from app.models.schema import VideoAspect, VideoParams, VideoConcatMode
 from app.utils import utils
@@ -32,7 +33,7 @@ def combine_videos(combined_video_path: str,
                    video_aspect: VideoAspect = VideoAspect.portrait,
                    video_concat_mode: VideoConcatMode = VideoConcatMode.random,
                    max_clip_duration: int = 5,
-                   threads: int = 2,
+                   threads: int = 4,
                    ) -> str:
     audio_clip = AudioFileClip(audio_file)
     audio_duration = audio_clip.duration
@@ -90,9 +91,10 @@ def combine_videos(combined_video_path: str,
             video_duration += clip.duration
 
     final_clip = concatenate_videoclips(clips)
+    # final_clip = CompositeVideoClip(clips)
     final_clip = final_clip.set_fps(30)
     logger.info(f"writing")
-    final_clip.write_videofile(combined_video_path, threads=threads)
+    final_clip.write_videofile(combined_video_path, threads=2, logger=None)
     logger.success(f"completed")
     return combined_video_path
 
